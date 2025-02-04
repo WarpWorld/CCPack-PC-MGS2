@@ -621,7 +621,6 @@ public class MGS2 : InjectEffectPack
         return GetGameState() == GameState.Ready;
     }
 
-
     protected override GameState GetGameState()
     {
         try
@@ -1767,7 +1766,7 @@ public class MGS2 : InjectEffectPack
                 byte current1 = GetCameraZoom();
                 if (current1 == 3)
                 {
-                    Respond(request, EffectStatus.FailPermanent, "Camera zoom effect already in action.");
+                    Respond(request, EffectStatus.FailTemporary, "Camera zoom effect already in action.");
                     break;
                 }
 
@@ -2123,7 +2122,7 @@ public class MGS2 : InjectEffectPack
                 }
                 else
                 {
-                    Respond(request, EffectStatus.FailPermanent, "Infinite Ammo is not available for this character.");
+                    Respond(request, EffectStatus.FailTemporary, "Infinite Ammo is not available for this character.");
                 }
                 break;
 
@@ -2136,7 +2135,7 @@ public class MGS2 : InjectEffectPack
                     eq != Items.ITM_BOX5 &&
                     eq != Items.ITM_WETBOX)
                 {
-                    Respond(request, EffectStatus.FailPermanent, "Player does not have a box equipped.");
+                    Respond(request, EffectStatus.FailTemporary, "Player does not have a box equipped.");
                     break;
                 }
                 TryEffect(request,
@@ -2158,7 +2157,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || GetWeaponClipCountShort() == 0)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity");
                         break;
                     }
 
@@ -2177,7 +2176,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_M9) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the M9.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the M9.");
                         break;
                     }
 
@@ -2197,7 +2196,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_USP) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the USP.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the USP.");
                         break;
                     }
                     TryEffect(request,
@@ -2216,7 +2215,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_SOCOM) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the SOCOM.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the SOCOM.");
                         break;
                     }
                     TryEffect(request,
@@ -2235,7 +2234,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_PSG1) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the PSG1.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the PSG1.");
                         break;
                     }
                     TryEffect(request,
@@ -2254,7 +2253,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_RGB6) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the RGB6.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the RGB6.");
                         break;
                     }
                     TryEffect(request,
@@ -2275,7 +2274,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_NIKITA) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the Nikita.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Nikita.");
                         break;
                     }
                     TryEffect(request,
@@ -2294,7 +2293,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_STINGER) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the Stinger.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Stinger.");
                         break;
                     }
                     TryEffect(request,
@@ -2313,7 +2312,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_CLAYMORE) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the Claymore.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Claymore.");
                         break;
                     }
                     TryEffect(request,
@@ -2332,7 +2331,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_C4) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the C4.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the C4.");
                         break;
                     }
                     TryEffect(request,
@@ -2351,7 +2350,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_CHAFF) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the Chaff.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Chaff.");
                         break;
                     }
                     TryEffect(request,
@@ -2370,7 +2369,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_STUNG) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the Stung.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Stung.");
                         break;
                     }
                     TryEffect(request,
@@ -2389,7 +2388,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_AKS74U) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the AKS74U.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the AKS74U.");
                         break;
                     }
                     TryEffect(request,
@@ -2408,7 +2407,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_MAGAZINE) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the Empty Magazine.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Empty Magazine.");
                         break;
                     }
                     TryEffect(request,
@@ -2427,7 +2426,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_GRENADE) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the Grenade.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Grenade.");
                         break;
                     }
                     TryEffect(request,
@@ -2446,7 +2445,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_M4) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the M4.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the M4.");
                         break;
                     }
                     TryEffect(request,
@@ -2465,7 +2464,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_PSG1T) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the PSG1-T.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the PSG1-T.");
                         break;
                     }
                     TryEffect(request,
@@ -2484,7 +2483,7 @@ public class MGS2 : InjectEffectPack
                 {
                     if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_BOOK) == -1)
                     {
-                        Respond(request, EffectStatus.FailPermanent, "Invalid quantity or Player does not have the Book.");
+                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Book.");
                         break;
                     }
                     TryEffect(request,
@@ -2500,7 +2499,7 @@ public class MGS2 : InjectEffectPack
                 }
 
             default:
-                Respond(request, EffectStatus.FailPermanent, "Invalid effect code");
+                Respond(request, EffectStatus.FailTemporary, "Invalid effect code");
                 break;
 
                 #endregion
