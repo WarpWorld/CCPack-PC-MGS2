@@ -1766,7 +1766,7 @@ public class MGS2 : InjectEffectPack
                 byte current1 = GetCameraZoom();
                 if (current1 == 3)
                 {
-                    Respond(request, EffectStatus.FailTemporary, "Camera zoom effect already in action.");
+                    Respond(request, EffectStatus.FailTemporary, StandardErrors.AlreadyInState, "Camera", "zoomed-in");
                     break;
                 }
 
@@ -2122,7 +2122,7 @@ public class MGS2 : InjectEffectPack
                 }
                 else
                 {
-                    Respond(request, EffectStatus.FailTemporary, "Infinite Ammo is not available for this character.");
+                    Respond(request, EffectStatus.FailTemporary, StandardErrors.InvalidTarget, "This character", "infinite ammo");
                 }
                 break;
 
@@ -2135,7 +2135,7 @@ public class MGS2 : InjectEffectPack
                     eq != Items.ITM_BOX5 &&
                     eq != Items.ITM_WETBOX)
                 {
-                    Respond(request, EffectStatus.FailTemporary, "Player does not have a box equipped.");
+                    Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "A box");
                     break;
                 }
                 TryEffect(request,
@@ -2155,13 +2155,24 @@ public class MGS2 : InjectEffectPack
 
             case "subtractAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || GetWeaponClipCountShort() == 0)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
-
-
+                    
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+                    
+                    if (GetWeaponClipCountShort() == 0)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "An equipped weapon with ammo");
+                        break;
+                    }
+                    
                     TryEffect(request,
                                 () => true,
                                 () => SubtractAmmoFromEquippedWeapon((short)quantity),
@@ -2174,9 +2185,21 @@ public class MGS2 : InjectEffectPack
 
             case "addM9Ammo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_M9) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the M9.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
+                        break;
+                    }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+                    
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_M9) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The M9");
                         break;
                     }
 
@@ -2194,11 +2217,24 @@ public class MGS2 : InjectEffectPack
 
             case "addUspAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_USP) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the USP.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_USP) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The USP");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2213,11 +2249,24 @@ public class MGS2 : InjectEffectPack
 
             case "addSocomAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_SOCOM) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the SOCOM.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_SOCOM) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The SOCOM");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2232,11 +2281,24 @@ public class MGS2 : InjectEffectPack
 
             case "addPsg1Ammo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_PSG1) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the PSG1.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_PSG1) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The PSG1");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2251,11 +2313,24 @@ public class MGS2 : InjectEffectPack
 
             case "addRgb6Ammo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_RGB6) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the RGB6.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_RGB6) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The RGB6");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2272,11 +2347,24 @@ public class MGS2 : InjectEffectPack
 
             case "addNikitaAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_NIKITA) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Nikita.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_NIKITA) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Nikita");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2291,11 +2379,24 @@ public class MGS2 : InjectEffectPack
 
             case "addStingerAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_STINGER) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Stinger.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_STINGER) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Stinger");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2310,11 +2411,24 @@ public class MGS2 : InjectEffectPack
 
             case "addClaymoreAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_CLAYMORE) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Claymore.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_CLAYMORE) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Claymore");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2329,11 +2443,24 @@ public class MGS2 : InjectEffectPack
 
             case "addC4Ammo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_C4) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the C4.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_C4) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The C4");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2348,11 +2475,24 @@ public class MGS2 : InjectEffectPack
 
             case "addChaffAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_CHAFF) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Chaff.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_CHAFF) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Chaff");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2367,11 +2507,24 @@ public class MGS2 : InjectEffectPack
 
             case "addStungAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_STUNG) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Stung.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_STUNG) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Stung");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2386,11 +2539,24 @@ public class MGS2 : InjectEffectPack
 
             case "addAks74uAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_AKS74U) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the AKS74U.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_AKS74U) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The AKS74U");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2405,11 +2571,24 @@ public class MGS2 : InjectEffectPack
 
             case "addMagazineAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_MAGAZINE) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Empty Magazine.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_MAGAZINE) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Empty Magazine");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2424,11 +2603,24 @@ public class MGS2 : InjectEffectPack
 
             case "addGrenadeAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_GRENADE) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Grenade.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_GRENADE) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Grenade");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2443,11 +2635,24 @@ public class MGS2 : InjectEffectPack
 
             case "addM4Ammo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_M4) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the M4.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_M4) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The M4");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2462,11 +2667,24 @@ public class MGS2 : InjectEffectPack
 
             case "addPsg1tAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_PSG1T) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the PSG1-T.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_PSG1T) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The PSG1-T");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2481,11 +2699,24 @@ public class MGS2 : InjectEffectPack
 
             case "addBookAmmo":
                 {
-                    if (codeParams.Length < 2 || !int.TryParse(codeParams[1], out int quantity) || new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_BOOK) == -1)
+                    if (codeParams.Length < 2)
                     {
-                        Respond(request, EffectStatus.FailTemporary, "Invalid quantity or Player does not have the Book.");
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
                         break;
                     }
+
+                    if (!int.TryParse(codeParams[1], out int quantity))
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+                        break;
+                    }
+
+                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_BOOK) == -1)
+                    {
+                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Book");
+                        break;
+                    }
+
                     TryEffect(request,
                         () => true,
                         () =>
@@ -2499,7 +2730,7 @@ public class MGS2 : InjectEffectPack
                 }
 
             default:
-                Respond(request, EffectStatus.FailTemporary, "Invalid effect code");
+                Respond(request, EffectStatus.FailTemporary, StandardErrors.UnknownEffect, request);
                 break;
 
                 #endregion
