@@ -1654,12 +1654,6 @@ public class MGS2 : InjectEffectPack
 
     protected override void StartEffect(EffectRequest request)
     {
-        if (!IsReady(request))
-        {
-            DelayEffect(request);
-            return;
-        }
-
         var codeParams = FinalCode(request).Split('_');
         switch (codeParams[0])
         {
