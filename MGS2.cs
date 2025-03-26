@@ -1654,7 +1654,7 @@ public class MGS2 : InjectEffectPack
 
     protected override void StartEffect(EffectRequest request)
     {
-        var codeParams = FinalCode(request).Split('_');
+        var codeParams = FinalCode(request: request).Split(separator: '_');
         switch (codeParams[0])
         {
             #region Alert Statuses
@@ -1667,8 +1667,7 @@ public class MGS2 : InjectEffectPack
                         SetAlertStatus();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the game to Alert Status."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the game to Alert Status."));
                 break;
 
             case "setEvasionStatus":
@@ -1679,8 +1678,7 @@ public class MGS2 : InjectEffectPack
                         SetEvasionStatus();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the game to Evasion Status."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the game to Evasion Status."));
                 break;
 
             case "setCautionStatus":
@@ -1691,29 +1689,28 @@ public class MGS2 : InjectEffectPack
                         SetCautionStatus();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the game to Caution Status."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the game to Caution Status."));
                 break;
 
             case "setLongAlertStatus":
-                var longAlertDuration = request.Duration = TimeSpan.FromSeconds(20);
+                var longAlertDuration = request.Duration = TimeSpan.FromSeconds(value: 20);
                 var longAlertAct = RepeatAction(request,
                     () => true,
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the game to Alert Status for {longAlertDuration.TotalSeconds} seconds."),
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the game to Alert Status for {longAlertDuration.TotalSeconds} seconds."),
                     TimeSpan.Zero,
-                    () => IsReady(request),
-                    TimeSpan.FromMilliseconds(500),
+                    () => IsReady(request: request),
+                    TimeSpan.FromMilliseconds(value: 500),
                     () =>
                     {
                         Set16(alertTimer, 9999);
                         return true;
                     },
-                    TimeSpan.FromMilliseconds(500),
+                    TimeSpan.FromMilliseconds(value: 500),
                     false);
                 longAlertAct.WhenCompleted.Then
-                    (_ =>
+                    (f: _ =>
                     {
-                        Connector.SendMessage("Alert Status has ended.");
+                        Connector.SendMessage(text: "Alert Status has ended.");
                     });
                 break;
 
@@ -1725,8 +1722,7 @@ public class MGS2 : InjectEffectPack
                         SetLongEvasionStatus();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the game to Evasion Status."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the game to Evasion Status."));
                 break;
 
             #endregion
@@ -1734,25 +1730,25 @@ public class MGS2 : InjectEffectPack
             #region Camera and HUD
 
             case "setHudToLetterBoxMode":
-                var letterBoxDuration = request.Duration = TimeSpan.FromSeconds(30);
+                var letterBoxDuration = request.Duration = TimeSpan.FromSeconds(value: 30);
                 var letterBoxAct = RepeatAction(request,
                     () => true,
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the game to letterbox mode for {letterBoxDuration.TotalSeconds} seconds."),
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the game to letterbox mode for {letterBoxDuration.TotalSeconds} seconds."),
                     TimeSpan.Zero,
-                    () => IsReady(request),
-                    TimeSpan.FromMilliseconds(500),
+                    () => IsReady(request: request),
+                    TimeSpan.FromMilliseconds(value: 500),
                     () =>
                     {
                         SetLetterBoxMode();
                         return true;
                     },
-                    TimeSpan.FromMilliseconds(500),
+                    TimeSpan.FromMilliseconds(value: 500),
                     false);
                 letterBoxAct.WhenCompleted.Then
-                    (_ =>
+                    (f: _ =>
                     {
                         UndoLetterBoxMode();
-                        Connector.SendMessage("Letterbox mode has ended.");
+                        Connector.SendMessage(text: "Letterbox mode has ended.");
                     });
                 break;
 
@@ -1760,29 +1756,29 @@ public class MGS2 : InjectEffectPack
                 byte current1 = GetCameraZoom();
                 if (current1 == 3)
                 {
-                    Respond(request, EffectStatus.FailTemporary, StandardErrors.AlreadyInState, "Camera", "zoomed-in");
+                    Respond(request, EffectStatus.FailTemporary, StandardErrors.AlreadyInState, ["Camera", "zoomed-in"]);
                     break;
                 }
 
-                var zoomInDuration = request.Duration = TimeSpan.FromSeconds(30);
+                var zoomInDuration = request.Duration = TimeSpan.FromSeconds(value: 30);
                 var zoomInAct = RepeatAction(request,
                     () => true,
-                    () => Connector.SendMessage($"{request.DisplayViewer} zoomed the camera in for {zoomInDuration.TotalSeconds} seconds."),
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} zoomed the camera in for {zoomInDuration.TotalSeconds} seconds."),
                     TimeSpan.Zero,
-                    () => IsReady(request),
-                    TimeSpan.FromMilliseconds(500),
+                    () => IsReady(request: request),
+                    TimeSpan.FromMilliseconds(value: 500),
                     () =>
                     {
                         SetCameraZoomIn();
                         return true;
                     },
-                    TimeSpan.FromMilliseconds(500),
+                    TimeSpan.FromMilliseconds(value: 500),
                     false);
                 zoomInAct.WhenCompleted.Then
-                    (_ =>
+                    (f: _ =>
                     {
                         SetCameraZoomNormal();
-                        Connector.SendMessage("Camera zoom in has ended.");
+                        Connector.SendMessage(text: "Camera zoom in has ended.");
                     });
                 break;
 
@@ -1794,8 +1790,7 @@ public class MGS2 : InjectEffectPack
                         SetDayMode();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the game to day mode."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the game to day mode."));
                 break;
 
             case "setHudToNightMode":
@@ -1806,8 +1801,7 @@ public class MGS2 : InjectEffectPack
                         SetNightMode();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the game to night mode."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the game to night mode."));
                 break;
 
             #endregion
@@ -1822,8 +1816,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsNormal();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to normal."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to normal."));
                 break;
 
             case "setGuardAnimationsPointGun":
@@ -1834,8 +1827,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsPointGun();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to point gun."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to point gun."));
                 break;
 
             case "setGuardAnimationsMoveForward":
@@ -1846,8 +1838,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsMoveForward();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to move forward."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to move forward."));
                 break;
 
             case "setGuardAnimationsYawn":
@@ -1858,8 +1849,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsYawn();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to yawn."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to yawn."));
                 break;
 
             case "setGuardAnimationsStretch":
@@ -1870,8 +1860,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsStretch();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to stretch."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to stretch."));
                 break;
 
             case "setGuardAnimationsLongDistanceOverwatch":
@@ -1882,8 +1871,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsLongDistanceOverwatch();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to long-distance overwatch."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to long-distance overwatch."));
                 break;
 
             case "setGuardAnimationsTakeOffGoggles":
@@ -1894,8 +1882,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsTakeOffGoggles();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to take off goggles."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to take off goggles."));
                 break;
 
             case "setGuardAnimationsPatTheFloor":
@@ -1906,8 +1893,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsPatTheFloor();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to pat the floor."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to pat the floor."));
                 break;
 
             case "setGuardAnimationsPhaseInOut":
@@ -1918,8 +1904,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsPhaseInOut();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to phase in and out."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to phase in and out."));
                 break;
 
             case "setGuardAnimationsPeeWiggle":
@@ -1930,8 +1915,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsPeeWiggle();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to pee wiggle."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to pee wiggle."));
                 break;
 
             case "setGuardAnimationsLeanRight":
@@ -1942,8 +1926,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsLeanRight();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to lean right."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to lean right."));
                 break;
 
             case "setGuardAnimationsLeanLeft":
@@ -1954,8 +1937,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsLeanLeft();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to lean left."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to lean left."));
                 break;
 
             case "setGuardAnimationsRollLeft":
@@ -1966,8 +1948,7 @@ public class MGS2 : InjectEffectPack
                         SetGuardAnimationsRollLeft();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} set the guard animations to roll left."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to roll left."));
                 break;
 
             case "forceGuardsToSleep":
@@ -1977,11 +1958,10 @@ public class MGS2 : InjectEffectPack
                     {
                         SetGuardSleepStatusAlwaysAsleep();
                         // Waiting 5 seconds gives it time to sleep all awake guards before returning to normal
-                        Task.Delay(5000).ContinueWith(_ => SetGuardSleepStatusNormal());
+                        Task.Delay(millisecondsDelay: 5000).ContinueWith(continuationAction: _ => SetGuardSleepStatusNormal());
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} forced all guards to sleep."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} forced all guards to sleep."));
                 break;
 
             case "forceGuardsToWakeUp":
@@ -1991,33 +1971,32 @@ public class MGS2 : InjectEffectPack
                     {
                         SetGuardWakeStatusAwake();
                         // Waiting 5 seconds gives it time to wake all sleeping guards before returning to normal
-                        Task.Delay(5000).ContinueWith(_ => SetGuardWakeStatusNormal());
+                        Task.Delay(millisecondsDelay: 5000).ContinueWith(continuationAction: _ => SetGuardWakeStatusNormal());
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} forced all guards to wake up."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} forced all guards to wake up."));
                 break;
 
             case "guardCantBeKnockedOut":
-                var guardCantBeKnockedOutDuration = request.Duration = TimeSpan.FromSeconds(30);
+                var guardCantBeKnockedOutDuration = request.Duration = TimeSpan.FromSeconds(value: 30);
                 var guardCantBeKnockedOutAct = RepeatAction(request,
                     () => true,
-                    () => Connector.SendMessage($"{request.DisplayViewer} made all guards immune to being knocked out for {guardCantBeKnockedOutDuration.TotalSeconds} seconds."),
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} made all guards immune to being knocked out for {guardCantBeKnockedOutDuration.TotalSeconds} seconds."),
                     TimeSpan.Zero,
-                    () => IsReady(request),
-                    TimeSpan.FromMilliseconds(500),
+                    () => IsReady(request: request),
+                    TimeSpan.FromMilliseconds(value: 500),
                 () =>
                 {
                     SetGuardWakeStatusAwake();
                     return true;
                 },
-                    TimeSpan.FromMilliseconds(500),
+                    TimeSpan.FromMilliseconds(value: 500),
                 false);
                 guardCantBeKnockedOutAct.WhenCompleted.Then
-                    (_ =>
+                    (f: _ =>
                     {
                         SetGuardWakeStatusNormal();
-                        Connector.SendMessage("Guard knock out immunity has ended.");
+                        Connector.SendMessage(text: "Guard knock out immunity has ended.");
                     });
                 break;
 
@@ -2039,24 +2018,24 @@ public class MGS2 : InjectEffectPack
             */
 
             case "emptyGunClip":
-                var emptyGunClipDuration = request.Duration = TimeSpan.FromSeconds(5);
+                var emptyGunClipDuration = request.Duration = TimeSpan.FromSeconds(value: 5);
                 var emptyGunClipAct = RepeatAction(request,
                     () => true,
-                    () => Connector.SendMessage($"{request.DisplayViewer} emptied the player's gun clip for {emptyGunClipDuration.TotalSeconds} seconds."),
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} emptied the player's gun clip for {emptyGunClipDuration.TotalSeconds} seconds."),
                     TimeSpan.Zero,
-                    () => IsReady(request),
-                    TimeSpan.FromMilliseconds(500),
+                    () => IsReady(request: request),
+                    TimeSpan.FromMilliseconds(value: 500),
                 () =>
                 {
                     EmptyClip();
                     return true;
                 },
-                    TimeSpan.FromMilliseconds(500),
+                    TimeSpan.FromMilliseconds(value: 500),
                 false);
                 emptyGunClipAct.WhenCompleted.Then
-                    (_ =>
+                    (f: _ =>
                     {
-                        Connector.SendMessage("Gun clip has been refilled.");
+                        Connector.SendMessage(text: "Gun clip has been refilled.");
                     });
                 break;
 
@@ -2066,57 +2045,57 @@ public class MGS2 : InjectEffectPack
                 // Bandana for Snake
                 if (currentCharacter == "r_tnk0" || currentCharacter == "r_vr_s" || currentCharacter == "r_vr_1")
                 {
-                    var infiniteAmmoDuration = request.Duration = TimeSpan.FromSeconds(20);
+                    var infiniteAmmoDuration = request.Duration = TimeSpan.FromSeconds(value: 20);
                     var infiniteAmmoAct = RepeatAction(request,
                         () => true,
-                        () => Connector.SendMessage($"{request.DisplayViewer} gave the player the Bandana for {infiniteAmmoDuration.TotalSeconds} seconds."),
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} gave the player the Bandana for {infiniteAmmoDuration.TotalSeconds} seconds."),
                         TimeSpan.Zero,
-                        () => IsReady(request),
-                        TimeSpan.FromMilliseconds(500),
+                        () => IsReady(request: request),
+                        TimeSpan.FromMilliseconds(value: 500),
                     () =>
                     {
-                        AddBandana(1);
+                        AddBandana(amountToSet: 1);
                         Set16(equippedItem, (short)Items.ITM_BANDANA);
                         return true;
                     },
-                        TimeSpan.FromMilliseconds(500),
+                        TimeSpan.FromMilliseconds(value: 500),
                     false);
                     infiniteAmmoAct.WhenCompleted.Then
-                        (_ =>
+                        (f: _ =>
                         {
-                            AddBandana(0);
-                            Connector.SendMessage("Bandana effect has ended.");
+                            AddBandana(amountToSet: 0);
+                            Connector.SendMessage(text: "Bandana effect has ended.");
                         });
                 }
 
                 // SP_WIG for Raiden
                 else if (currentCharacter == "r_plt0" || currentCharacter == "r_vr_b" || currentCharacter == "r_vr_r")
                 {
-                    var infiniteAmmoDuration = request.Duration = TimeSpan.FromSeconds(20);
+                    var infiniteAmmoDuration = request.Duration = TimeSpan.FromSeconds(value: 20);
                     var infiniteAmmoAct = RepeatAction(request,
                         () => true,
-                        () => Connector.SendMessage($"{request.DisplayViewer} gave the player the SPWIG for {infiniteAmmoDuration.TotalSeconds} seconds."),
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} gave the player the SPWIG for {infiniteAmmoDuration.TotalSeconds} seconds."),
                         TimeSpan.Zero,
-                        () => IsReady(request),
-                        TimeSpan.FromMilliseconds(500),
+                        () => IsReady(request: request),
+                        TimeSpan.FromMilliseconds(value: 500),
                     () =>
                     {
-                        AddSpwig(1);
+                        AddSpwig(amountToSet: 1);
                         Set16(equippedItem, (short)Items.ITM_SPWIG);
                         return true;
                     },
-                        TimeSpan.FromMilliseconds(500),
+                        TimeSpan.FromMilliseconds(value: 500),
                     false);
                     infiniteAmmoAct.WhenCompleted.Then
-                        (_ =>
+                        (f: _ =>
                         {
-                            AddSpwig(0);
-                            Connector.SendMessage("SPWIG effect has ended.");
+                            AddSpwig(amountToSet: 0);
+                            Connector.SendMessage(text: "SPWIG effect has ended.");
                         });
                 }
                 else
                 {
-                    Respond(request, EffectStatus.FailTemporary, StandardErrors.InvalidTarget, "This character", "infinite ammo");
+                    Respond(request, EffectStatus.FailTemporary, StandardErrors.InvalidTarget, ["This character", "infinite ammo"]);
                 }
                 break;
 
@@ -2139,8 +2118,7 @@ public class MGS2 : InjectEffectPack
                         BreakBox();
                         return true;
                     },
-                    () => Connector.SendMessage($"{request.DisplayViewer} broke the player's box."),
-                    null, true);
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} broke the player's box."));
                 break;
 
             #endregion
@@ -2169,11 +2147,10 @@ public class MGS2 : InjectEffectPack
                     
                     TryEffect(request,
                                 () => true,
-                                () => SubtractAmmoFromEquippedWeapon((short)quantity),
+                                () => SubtractAmmoFromEquippedWeapon(amountToSubtract: (short)quantity),
                                 () => Connector.SendMessage(
-                                    $"{request.DisplayViewer} subtracted {quantity} ammo from the player's equipped weapon."
-                                ),
-                                null, true);
+                                    text: $"{request.DisplayViewer} subtracted {quantity} ammo from the player's equipped weapon."
+                                ));
                     break;
                 }
 
@@ -2191,7 +2168,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
                     
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_M9) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_M9) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The M9");
                         break;
@@ -2201,11 +2178,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddM9Ammo((short)quantity);
+                            AddM9Ammo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} ammo to the M9."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the M9."));
                     break;
                 }
 
@@ -2223,7 +2199,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_USP) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_USP) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The USP");
                         break;
@@ -2233,11 +2209,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddUspAmmo((short)quantity);
+                            AddUspAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} ammo to the USP."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the USP."));
                     break;
                 }
 
@@ -2255,7 +2230,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_SOCOM) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_SOCOM) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The SOCOM");
                         break;
@@ -2265,11 +2240,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddSocomAmmo((short)quantity);
+                            AddSocomAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} ammo to the SOCOM."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the SOCOM."));
                     break;
                 }
 
@@ -2287,7 +2261,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_PSG1) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_PSG1) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The PSG1");
                         break;
@@ -2297,11 +2271,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddPsg1Ammo((short)quantity);
+                            AddPsg1Ammo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} ammo to the PSG1."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the PSG1."));
                     break;
                 }
 
@@ -2319,7 +2292,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_RGB6) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_RGB6) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The RGB6");
                         break;
@@ -2329,11 +2302,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddRgb6Ammo((short)quantity);
+                            AddRgb6Ammo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} grenades into the RGB6."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} grenades into the RGB6."));
                     break;
                 }
 
@@ -2353,7 +2325,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_NIKITA) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_NIKITA) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Nikita");
                         break;
@@ -2363,11 +2335,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddNikitaAmmo((short)quantity);
+                            AddNikitaAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} remote controlled missiles to the Nikita."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} remote controlled missiles to the Nikita."));
                     break;
                 }
 
@@ -2385,7 +2356,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_STINGER) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_STINGER) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Stinger");
                         break;
@@ -2395,11 +2366,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddStingerAmmo((short)quantity);
+                            AddStingerAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} missiles to the Stinger."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} missiles to the Stinger."));
                     break;
                 }
 
@@ -2417,7 +2387,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_CLAYMORE) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_CLAYMORE) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Claymore");
                         break;
@@ -2427,11 +2397,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddClaymoreAmmo((short)quantity);
+                            AddClaymoreAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} to the Claymore pouch."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Claymore pouch."));
                     break;
                 }
 
@@ -2449,7 +2418,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_C4) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_C4) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The C4");
                         break;
@@ -2459,11 +2428,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddC4Ammo((short)quantity);
+                            AddC4Ammo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} to the C4 count."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the C4 count."));
                     break;
                 }
 
@@ -2481,7 +2449,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_CHAFF) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_CHAFF) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Chaff");
                         break;
@@ -2491,11 +2459,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddChaffAmmo((short)quantity);
+                            AddChaffAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} to the Chaff Grenade pouch."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Chaff Grenade pouch."));
                     break;
                 }
 
@@ -2513,7 +2480,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_STUNG) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_STUNG) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Stung");
                         break;
@@ -2523,11 +2490,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddStungAmmo((short)quantity);
+                            AddStungAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} to the Stun Grenade pouch."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Stun Grenade pouch."));
                     break;
                 }
 
@@ -2545,7 +2511,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_AKS74U) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_AKS74U) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The AKS74U");
                         break;
@@ -2555,11 +2521,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddAks74uAmmo((short)quantity);
+                            AddAks74uAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} ammo to the AKS74U."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the AKS74U."));
                     break;
                 }
 
@@ -2577,7 +2542,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_MAGAZINE) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_MAGAZINE) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Empty Magazine");
                         break;
@@ -2587,11 +2552,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddMagazineAmmo((short)quantity);
+                            AddMagazineAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} to the Empty Magazine count."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Empty Magazine count."));
                     break;
                 }
 
@@ -2609,7 +2573,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_GRENADE) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_GRENADE) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Grenade");
                         break;
@@ -2619,11 +2583,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddGrenadeAmmo((short)quantity);
+                            AddGrenadeAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} to the Grenade pouch."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Grenade pouch."));
                     break;
                 }
 
@@ -2641,7 +2604,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_M4) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_M4) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The M4");
                         break;
@@ -2651,11 +2614,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddM4Ammo((short)quantity);
+                            AddM4Ammo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} ammo to the M4."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the M4."));
                     break;
                 }
 
@@ -2673,7 +2635,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_PSG1T) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_PSG1T) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The PSG1-T");
                         break;
@@ -2683,11 +2645,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddPsg1tAmmo((short)quantity);
+                            AddPsg1tAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} ammo to the PSG1-T."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the PSG1-T."));
                     break;
                 }
 
@@ -2705,7 +2666,7 @@ public class MGS2 : InjectEffectPack
                         break;
                     }
 
-                    if (new WeaponItemManager(this).ReadWeaponAmmo(Weapons.WEP_BOOK) == -1)
+                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_BOOK) == -1)
                     {
                         Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Book");
                         break;
@@ -2715,11 +2676,10 @@ public class MGS2 : InjectEffectPack
                         () => true,
                         () =>
                         {
-                            AddBookAmmo((short)quantity);
+                            AddBookAmmo(amountToAdd: (short)quantity);
                             return true;
                         },
-                        () => Connector.SendMessage($"{request.DisplayViewer} added {quantity} to the Book supply."),
-                        null, true);
+                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Book supply."));
                     break;
                 }
 
