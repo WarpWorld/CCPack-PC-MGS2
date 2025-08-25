@@ -1329,59 +1329,59 @@ public class MGS2 : InjectEffectPack
     {
         // Alert Status
         new ("Set Alert Status", "setAlertStatus")
-        {   Price = 50,
+        {   Price = 80,
             Description = "Triggers an alert status, sending the guards to attack the player",
             Category = "Alert Statuses"
         },
 
         new ("Set Evasion Status", "setEvasionStatus")
-        {   Price = 30,
+        {   Price = 50,
             Description = "Triggers an evasion status, sending the guards to search for the player",
             Category = "Alert Statuses"
         },
 
         new ("Set Caution Status", "setCautionStatus")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Triggers a caution status, keeping guards on high alert during patrols",
             Category = "Alert Statuses"
         },
 
         new ("Set Long Alert Status", "setLongAlertStatus")
-        {   Price = 75,
+        {   Price = 120,
             Duration = 20,
             Description = "Triggers an alert status for a longer duration",
             Category = "Alert Statuses"
         },
 
         new ("Set Long Evasion Status", "setLongEvasionStatus")
-        {   Price = 40,
+        {   Price = 60,
             Description = "Triggers an evasion status for a longer duration",
             Category = "Alert Statuses"
         },
 
         // Camera and HUD
         new ("Set HUD to Letterbox Mode", "setHudToLetterBoxMode")
-        {   Price = 40,
+        {   Price = 60,
             Duration = 30,
             Description = "Sets the game to letterbox mode",
             Category = "Camera and HUD"
         },
 
         new ("Make Camera Zoom in", "setCameraZoomIn")
-        {   Price = 40,
+        {   Price = 60,
             Duration = 30,
             Description = "Zooms the camera in",
             Category = "Camera and HUD"
         },
 
         new ("Set Game Lighting to Default", "setHudToDayMode")
-        {   Price = 15,
+        {   Price = 20,
             Description = "Sets the game to day mode, this effect is best used during the Plant chapter to notice it",
             Category = "Camera and HUD"
         },
 
         new ("Set Game Lighting to Night", "setHudToNightMode")
-        {   Price = 15,
+        {   Price = 20,
             Description = "Sets the game lighting to night mode, this effect is best used during the Plant chapter to notice it",
             Category = "Camera and HUD"
         },
@@ -1389,97 +1389,97 @@ public class MGS2 : InjectEffectPack
 
         // Guards
         new ("Set Guard to Normal", "setGuardAnimationsNormal")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to normal",
             Category = "Guards"
         },
 
         new ("Set Guard to Point Gun", "setGuardAnimationsPointGun")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to point gun during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Move Forward", "setGuardAnimationsMoveForward")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to move forward at their stopping points",
             Category = "Guards"
         },
 
         new ("Set Guard to Yawn", "setGuardAnimationsYawn")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to yawn when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Stretch", "setGuardAnimationsStretch")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to stretch when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Long-Distance Overwatch", "setGuardAnimationsLongDistanceOverwatch")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to look a long distance with their scope when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Take Off Goggles", "setGuardAnimationsTakeOffGoggles")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to take off their goggles when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Pat the Floor", "setGuardAnimationsPatTheFloor")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to pat the floor when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Phase In and Out", "setGuardAnimationsPhaseInOut")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to break the known laws of physics and phase in and out when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Pee Wiggle", "setGuardAnimationsPeeWiggle")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to wiggle as if they gotta pee when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Lean Right", "setGuardAnimationsLeanRight")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to lean right when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Lean Left", "setGuardAnimationsLeanLeft")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to lean left when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Roll Left", "setGuardAnimationsRollLeft")
-        {   Price = 20,
+        {   Price = 30,
             Description = "Sets the guard animations to side roll to the left when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("All Guards go to Sleep", "forceGuardsToSleep")
-        {   Price = 40,
+        {   Price = 60,
             Description = "Forces all guards to sleep",
             Category = "Guards"
         },
 
         new ("All Guards Wake Up", "forceGuardsToWakeUp")
-        {   Price = 40,
+        {   Price = 60,
             Description = "Forces all guards asleep to wake up",
             Category = "Guards"
         },
 
         new ("All Guards Can't Be Knocked Out", "guardCantBeKnockedOut")
-        {   Price = 75,
+        {   Price = 120,
             Duration = 30,
             Description = "Makes guards immune to being knocked out for a short period",
             Category = "Guards"
@@ -1488,7 +1488,7 @@ public class MGS2 : InjectEffectPack
         // Snake/Raiden
         new ("Empty Gun Clip", "emptyGunClip")
         {
-            Price = 40,
+            Price = 60,
             Duration = 5,
             Description = "Continuously empties the player's weapon clip for a short duration",
             Category = "Snake/Raiden"
@@ -1496,7 +1496,7 @@ public class MGS2 : InjectEffectPack
 
         new ("Infinite Ammo", "infiniteAmmo")
         {
-            Price = 100,
+            Price = 150,
             Duration = 20,
             Description = "Gives the player infinite ammo for a short duration",
             Category = new string[]{ "Snake/Raiden", "Ammo" }
@@ -1504,14 +1504,14 @@ public class MGS2 : InjectEffectPack
 
         new ("Break Box", "breakBox")
         {
-            Price = 50,
+            Price = 80,
             Description = "Breaks the player's currently equipped box.... Snake won't be happy about this one",
             Category = "Snake/Raiden"
         },
 
         /* Commented out until I can find a way to check if the player is in an animation to prevent the player from being locked in an animation 
         new ("Flinch Player", "flinchPlayer")
-        {   Price = 40,
+        {   Price = 60,
             Description = "Makes the player flinch",
             Category = "Snake/Raiden"
         },
@@ -1519,14 +1519,14 @@ public class MGS2 : InjectEffectPack
 
         // Ammo
         new("Subtract Ammo", "subtractAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Removes a chunk of the player's ammo/quantity from their equipped weapon",
             Category = "Ammo"
         },
 
         new ("Add M9 Ammo", "addM9Ammo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the M9",
             Category = "Ammo",
@@ -1534,7 +1534,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add USP Ammo", "addUspAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the USP",
             Category = "Ammo",
@@ -1542,7 +1542,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add SOCOM Ammo", "addSocomAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the SOCOM",
             Category = "Ammo",
@@ -1550,7 +1550,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add PSG1 Ammo", "addPsg1Ammo")
-        { Price = 1,
+        { Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the PSG1",
             Category = "Ammo",
@@ -1558,7 +1558,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add RGB6 Ammo", "addRgb6Ammo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the RGB6",
             Category = "Ammo",
@@ -1566,7 +1566,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add Nikita Ammo", "addNikitaAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the Nikita",
             Category = "Ammo",
@@ -1574,7 +1574,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add Stinger Ammo", "addStingerAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the Stinger",
             Category = "Ammo",
@@ -1582,7 +1582,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add Claymores", "addClaymoreAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the Claymore",
             Category = "Ammo",
@@ -1590,7 +1590,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add C4", "addC4Ammo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the C4",
             Category = "Ammo",
@@ -1598,7 +1598,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add Chaff Grenades", "addChaffAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the Chaff",
             Category = "Ammo",
@@ -1606,7 +1606,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add Stun Grenades", "addStungAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the Stung",
             Category = "Ammo",
@@ -1614,7 +1614,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add AKS74U Ammo", "addAks74uAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the AKS74U",
             Category = "Ammo",
@@ -1622,7 +1622,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add Magazine Ammo", "addMagazineAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Gives the player extra Empty Magazines to throw",
             Category = "Ammo",
@@ -1630,7 +1630,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add Grenades", "addGrenadeAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds to the Grenade ",
             Category = "Ammo",
@@ -1638,7 +1638,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add M4 Ammo", "addM4Ammo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the M4",
             Category = "Ammo",
@@ -1646,7 +1646,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add PSG1-T Ammo", "addPsg1tAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the PSG1-T",
             Category = "Ammo",
@@ -1654,7 +1654,7 @@ public class MGS2 : InjectEffectPack
         },
 
         new ("Add Books", "addBookAmmo")
-        {   Price = 1,
+        {   Price = 2,
             Quantity = 50,
             Description = "Adds ammo to the Book",
             Category = "Ammo",
