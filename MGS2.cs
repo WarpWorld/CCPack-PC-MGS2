@@ -1499,7 +1499,7 @@ public class MGS2 : InjectEffectPack
             Price = 100,
             Duration = 20,
             Description = "Gives the player infinite ammo for a short duration",
-            Category = "Snake/Raiden"
+            Category = new string[]{ "Snake/Raiden", "Ammo" }
         },
 
         new ("Break Box", "breakBox")
@@ -1529,119 +1529,136 @@ public class MGS2 : InjectEffectPack
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the M9",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add USP Ammo", "addUspAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the USP",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add SOCOM Ammo", "addSocomAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the SOCOM",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add PSG1 Ammo", "addPsg1Ammo")
         { Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the PSG1",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add RGB6 Ammo", "addRgb6Ammo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the RGB6",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add Nikita Ammo", "addNikitaAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the Nikita",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add Stinger Ammo", "addStingerAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the Stinger",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add Claymores", "addClaymoreAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the Claymore",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add C4", "addC4Ammo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the C4",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add Chaff Grenades", "addChaffAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the Chaff",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add Stun Grenades", "addStungAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the Stung",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add AKS74U Ammo", "addAks74uAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the AKS74U",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add Magazine Ammo", "addMagazineAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Gives the player extra Empty Magazines to throw",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add Grenades", "addGrenadeAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds to the Grenade ",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add M4 Ammo", "addM4Ammo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the M4",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add PSG1-T Ammo", "addPsg1tAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the PSG1-T",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
         new ("Add Books", "addBookAmmo")
         {   Price = 1,
             Quantity = 50,
             Description = "Adds ammo to the Book",
-            Category = "Ammo"
+            Category = "Ammo",
+            Image = "give_ammo"
         },
 
     };
