@@ -1767,7 +1767,7 @@ public class MGS2 : InjectEffectPack
                 byte current1 = GetCameraZoom();
                 if (current1 == 3)
                 {
-                    Respond(request, EffectStatus.FailTemporary, StandardErrors.AlreadyInState, ["Camera", "zoomed-in"]);
+                    FastFail(request, EffectStatus.FailTemporary, StandardErrors.AlreadyInState, ["Camera", "zoomed-in"]);
                     break;
                 }
 
@@ -2106,7 +2106,7 @@ public class MGS2 : InjectEffectPack
                 }
                 else
                 {
-                    Respond(request, EffectStatus.FailTemporary, StandardErrors.InvalidTarget, ["This character", "infinite ammo"]);
+                    FastFail(request, EffectStatus.FailTemporary, StandardErrors.InvalidTarget, ["This character", "infinite ammo"]);
                 }
                 break;
 
@@ -2119,7 +2119,7 @@ public class MGS2 : InjectEffectPack
                     eq != Items.ITM_BOX5 &&
                     eq != Items.ITM_WETBOX)
                 {
-                    Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "A box");
+                    FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "A box");
                     break;
                 }
                 TryEffect(request,
@@ -2152,7 +2152,7 @@ public class MGS2 : InjectEffectPack
                     
                     if (GetWeaponClipCountShort() == 0)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "An equipped weapon with ammo");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "An equipped weapon with ammo");
                         break;
                     }
                     
@@ -2181,7 +2181,7 @@ public class MGS2 : InjectEffectPack
                     
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_M9) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The M9");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The M9");
                         break;
                     }
 
@@ -2212,7 +2212,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_USP) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The USP");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The USP");
                         break;
                     }
 
@@ -2243,7 +2243,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_SOCOM) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The SOCOM");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The SOCOM");
                         break;
                     }
 
@@ -2274,7 +2274,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_PSG1) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The PSG1");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The PSG1");
                         break;
                     }
 
@@ -2305,7 +2305,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_RGB6) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The RGB6");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The RGB6");
                         break;
                     }
 
@@ -2338,7 +2338,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_NIKITA) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Nikita");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Nikita");
                         break;
                     }
 
@@ -2369,7 +2369,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_STINGER) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Stinger");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Stinger");
                         break;
                     }
 
@@ -2400,7 +2400,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_CLAYMORE) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Claymore");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Claymore");
                         break;
                     }
 
@@ -2431,7 +2431,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_C4) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The C4");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The C4");
                         break;
                     }
 
@@ -2462,7 +2462,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_CHAFF) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Chaff");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Chaff");
                         break;
                     }
 
@@ -2493,7 +2493,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_STUNG) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Stung");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Stung");
                         break;
                     }
 
@@ -2524,7 +2524,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_AKS74U) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The AKS74U");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The AKS74U");
                         break;
                     }
 
@@ -2555,7 +2555,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_MAGAZINE) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Empty Magazine");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Empty Magazine");
                         break;
                     }
 
@@ -2586,7 +2586,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_GRENADE) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Grenade");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Grenade");
                         break;
                     }
 
@@ -2617,7 +2617,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_M4) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The M4");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The M4");
                         break;
                     }
 
@@ -2648,7 +2648,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_PSG1T) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The PSG1-T");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The PSG1-T");
                         break;
                     }
 
@@ -2679,7 +2679,7 @@ public class MGS2 : InjectEffectPack
 
                     if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_BOOK) == -1)
                     {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Book");
+                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Book");
                         break;
                     }
 
