@@ -551,7 +551,7 @@ public class MGS2 : InjectEffectPack
         }
         else
         {
-            throw new Exception("Failed to read float value.");
+            throw new("Failed to read float value.");
         }
     }
 
