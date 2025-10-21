@@ -61,33 +61,33 @@ public class MGS2 : InjectEffectPack
         Connector.PointerFormat = PointerFormat.Absolute64LE;
 
         // Game State Checks
-        characterString = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+949340=>+1C");
-        mapString = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+949340=>+2C");
+        characterString = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+948340=>+1C");
+        mapString = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+948340=>+2C");
         pauseState = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+17DBC7C");
 
         // Alert Stauses
-        alertTimer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16C9568");
-        evasionTimer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16C9584");
-        alertStatusTrigger = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+949340=>+11A");
+        alertTimer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16C8568");
+        evasionTimer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16C8584");
+        alertStatusTrigger = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+948340=>+11A");
 
         // Camera and HUD
-        letterBoxMode = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+15525CD");
-        dayOrNightMode = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+2D18EF");
-        cameraZoom = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+15525C9");
+        letterBoxMode = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+15515BD");
+        dayOrNightMode = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+2D19BF");
+        cameraZoom = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+15515B9");
 
         // Guards
-        guardAnimations = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16EA3D"); // Array 7
-        guardWakeStatus = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+159CED");
-        guardSleepStatus = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+1592D8");
+        guardAnimations = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16EB3D"); // Array 7
+        guardWakeStatus = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+159DCD");
+        guardSleepStatus = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+1593B8");
 
         // Snake/Raiden
         flinchPlayer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+17DF660=>+A8");
 
         // Weapons, Ammo & Items
-        weaponsAndItemPointer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+1540C20=>+0");
-        equippedWeapon = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+949340=>+104");
-        equippedItem = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+949340=>+106");
-        weaponClipCount = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16E994C");
+        weaponsAndItemPointer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+153FC10=>+0");
+        equippedWeapon = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+948340=>+104");
+        equippedItem = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+948340=>+106");
+        weaponClipCount = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16E894C");
     }
 
 
