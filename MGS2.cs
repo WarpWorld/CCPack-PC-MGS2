@@ -36,6 +36,12 @@ public class MGS2 : InjectEffectPack
     private AddressChain dayOrNightMode;
     private AddressChain cameraZoom;
     private AddressChain hudFilter;
+    private AddressChain disableItemMenuPause;
+    private AddressChain disableWeaponMenuPause;
+
+    private static readonly byte[] ItemMenuPauseDefaultBytes = [0x09, 0x2D, 0x1D, 0xCA, 0x5E, 0x01];
+    private static readonly byte[] WeaponMenuPauseDefaultBytes = [0x09, 0x2D, 0x1F, 0xAF, 0x5E, 0x01];
+    private static readonly byte[] MenuPauseDisabledBytes = [0x90, 0x90, 0x90, 0x90, 0x90, 0x90];
 
     // Guards
     private AddressChain guardAnimations;
@@ -61,39 +67,39 @@ public class MGS2 : InjectEffectPack
         Connector.PointerFormat = PointerFormat.Absolute64LE;
 
         // Game State Checks
-        characterString = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+948340=>+1C");
-        mapString = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+948340=>+2C");
-        pauseState = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+17DBC7C");
+        characterString = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+949340=>+1C"); // Done
+        mapString = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+949340=>+2C"); // Done
+        pauseState = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+17DBC7C");// Done
 
         // Alert Stauses
-        alertTimer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16C8568");
-        evasionTimer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16C8584");
-        alertStatusTrigger = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+948340=>+11A");
+        alertTimer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16C9568"); // Done
+        evasionTimer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16C9584"); // Done
+        alertStatusTrigger = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+949340=>+11A"); // Done
 
         // Camera and HUD
-        letterBoxMode = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+15515BD");
-        dayOrNightMode = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+2D19BF");
-        cameraZoom = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+15515B9");
+        letterBoxMode = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+15525CD");
+        dayOrNightMode = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+2D1AAF"); // Double check
+        cameraZoom = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+15525C9"); // Test
+        disableItemMenuPause = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+1EF259");
+        disableWeaponMenuPause = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+1F0D57");
 
         // Guards
-        guardAnimations = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16EB3D"); // Array 7
-        guardWakeStatus = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+159DCD");
-        guardSleepStatus = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+1593B8");
+        guardAnimations = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16EBFD"); // Test
+        guardWakeStatus = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+159EAD"); // Done
+        guardSleepStatus = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+159498"); // Done
 
         // Snake/Raiden
         flinchPlayer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+17DF660=>+A8");
 
         // Weapons, Ammo & Items
-        weaponsAndItemPointer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+153FC10=>+0");
-        equippedWeapon = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+948340=>+104");
-        equippedItem = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+948340=>+106");
-        weaponClipCount = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16E894C");
+        weaponsAndItemPointer = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+1540C20=>+0"); // Done
+        equippedWeapon = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+949340=>+104"); // Done
+        equippedItem = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+949340=>+106"); // Done
+        weaponClipCount = AddressChain.Parse(Connector, "\"METAL GEAR SOLID2.exe\"+16E994C"); // Done
     }
-
-
     private void DeinitGame()
     {
-
+        RestoreMenuPauseDefault();
     }
 
     #endregion
@@ -551,7 +557,7 @@ public class MGS2 : InjectEffectPack
         }
         else
         {
-            throw new("Failed to read float value.");
+            throw new Exception("Failed to read float value.");
         }
     }
 
@@ -631,8 +637,9 @@ public class MGS2 : InjectEffectPack
 
             return GameState.Ready;
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Error($"GetGameState failed: {ex.Message}");
             return GameState.Unknown;
         }
     }
@@ -646,6 +653,9 @@ public class MGS2 : InjectEffectPack
 
     private string currentCharacter = string.Empty;
     private string currentMap = string.Empty;
+    private int guardAnimationToken = 0;
+    private bool isTimedGuardAnimationActive = false;
+    private readonly Random guardAnimationRandom = new();
 
     private string GetCharacterString()
     {
@@ -666,6 +676,128 @@ public class MGS2 : InjectEffectPack
         byte pauseStateValue = Get8(pauseState);
         Log.Message($"Pause State: {pauseStateValue}");
         return pauseStateValue;
+    }
+
+    private void StartTimedGuardAnimationEffect(EffectRequest request, Action setAnimationAction, string animationName)
+    {
+        if (isTimedGuardAnimationActive)
+        {
+            Respond(request, EffectStatus.FailTemporary, StandardErrors.AlreadyInState, ["Guard animations", "already modified"]);
+            return;
+        }
+
+        System.TimeSpan duration = TimeSpan.FromSeconds(request.Duration.TotalSeconds);
+        int thisToken = ++guardAnimationToken;
+
+        TryEffect(request,
+            () => true,
+            () =>
+            {
+                setAnimationAction();
+                isTimedGuardAnimationActive = true;
+                return true;
+            },
+            () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to {animationName} for {duration.TotalSeconds} seconds."));
+
+        _ = ResetGuardAnimationsAfterDelay(thisToken, duration);
+    }
+
+    private void SetRandomGuardAnimation()
+    {
+        int roll = guardAnimationRandom.Next(12);
+        switch (roll)
+        {
+            case 0: SetGuardAnimationsPointGun(); break;
+            case 1: SetGuardAnimationsMoveForward(); break;
+            case 2: SetGuardAnimationsYawn(); break;
+            case 3: SetGuardAnimationsStretch(); break;
+            case 4: SetGuardAnimationsLongDistanceOverwatch(); break;
+            case 5: SetGuardAnimationsTakeOffGoggles(); break;
+            case 6: SetGuardAnimationsPatTheFloor(); break;
+            case 7: SetGuardAnimationsPhaseInOut(); break;
+            case 8: SetGuardAnimationsPeeWiggle(); break;
+            case 9: SetGuardAnimationsLeanRight(); break;
+            case 10: SetGuardAnimationsLeanLeft(); break;
+            default: SetGuardAnimationsRollLeft(); break;
+        }
+    }
+
+    private void StartRandomGuardAnimationEffect(EffectRequest request)
+    {
+        if (isTimedGuardAnimationActive)
+        {
+            Respond(request, EffectStatus.FailTemporary, StandardErrors.AlreadyInState, ["Guard animations", "already modified"]);
+            return;
+        }
+
+        System.TimeSpan duration = TimeSpan.FromSeconds(request.Duration.TotalSeconds);
+        int thisToken = ++guardAnimationToken;
+
+        TryEffect(request,
+            () => true,
+            () =>
+            {
+                isTimedGuardAnimationActive = true;
+                SetRandomGuardAnimation();
+                _ = RunRandomGuardAnimations(thisToken, duration, TimeSpan.FromSeconds(5));
+                return true;
+            },
+            () => Connector.SendMessage(text: $"{request.DisplayViewer} started random guard animations for {duration.TotalSeconds} seconds."));
+    }
+
+    private async Task RunRandomGuardAnimations(int token, TimeSpan duration, TimeSpan interval)
+    {
+        DateTime endTime = DateTime.UtcNow + duration;
+        while (DateTime.UtcNow + interval < endTime)
+        {
+            await Task.Delay(interval);
+
+            if (token != guardAnimationToken || !isTimedGuardAnimationActive)
+            {
+                return;
+            }
+
+            try
+            {
+                SetRandomGuardAnimation();
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Failed to apply random guard animation: {ex.Message}");
+            }
+        }
+
+        await ResetGuardAnimationsAfterDelay(token, endTime - DateTime.UtcNow);
+    }
+
+    private async Task ResetGuardAnimationsAfterDelay(int token, TimeSpan duration)
+    {
+        if (duration > TimeSpan.Zero)
+        {
+            await Task.Delay(duration);
+        }
+
+        // Only the most recent guard animation effect is allowed to reset to normal.
+        if (token != guardAnimationToken)
+        {
+            return;
+        }
+
+        if (!isTimedGuardAnimationActive)
+        {
+            return;
+        }
+
+        try
+        {
+            SetGuardAnimationsNormal();
+            isTimedGuardAnimationActive = false;
+            Connector.SendMessage(text: "Guard animations have returned to normal.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"Failed to reset guard animations to normal: {ex.Message}");
+        }
     }
 
     #endregion
@@ -827,6 +959,39 @@ public class MGS2 : InjectEffectPack
     private byte GetCameraZoom()
     {
         return Get8(cameraZoom);
+    }
+
+    private void SetMenuPauseDisabled()
+    {
+        try
+        {
+            SetArray(disableItemMenuPause, MenuPauseDisabledBytes);
+            SetArray(disableWeaponMenuPause, MenuPauseDisabledBytes);
+        }
+        catch (Exception e)
+        {
+            Log.Error($"An error occurred while disabling item/weapon menu pause: {e.Message}");
+        }
+    }
+
+    private void RestoreMenuPauseDefault()
+    {
+        try
+        {
+            if (disableItemMenuPause != null)
+            {
+                SetArray(disableItemMenuPause, ItemMenuPauseDefaultBytes);
+            }
+
+            if (disableWeaponMenuPause != null)
+            {
+                SetArray(disableWeaponMenuPause, WeaponMenuPauseDefaultBytes);
+            }
+        }
+        catch (Exception e)
+        {
+            Log.Error($"An error occurred while restoring item/weapon menu pause: {e.Message}");
+        }
     }
 
     #endregion
@@ -1037,58 +1202,9 @@ public class MGS2 : InjectEffectPack
         return (Weapons)rawVal;
     }
 
-    private short GetWeaponClipCountShort()
-    {
-        short rawVal = Get16(weaponClipCount);
-        Log.Message($"Weapon Clip = {rawVal}");
-        return rawVal;
-    }
-
     private void EmptyWeaponClip(short newValue)
     {
         Set16(weaponClipCount, newValue);
-    }
-
-    private bool SubtractAmmoFromEquippedWeapon(short amountToSubtract = 1)
-    {
-        try
-        {
-            Weapons equippedWep = GetEquippedWeaponEnum();
-            // These weapons don't have ammo but follow the same rules as weapons that do and removing them can cause a softlock
-            if (equippedWep == Weapons.WEP_NONE || equippedWep == Weapons.WEP_DMIC || equippedWep == Weapons.WEP_HFBLADE || equippedWep == Weapons.WEP_COOLANT || equippedWep == Weapons.WEP_DMIC2)
-            {
-                Log.Message("No valid weapon is currently equipped.");
-                return false;
-            }
-
-            var manager = new WeaponItemManager(this);
-
-            short currentAmmo = manager.ReadWeaponAmmo(equippedWep);
-
-            if (currentAmmo <= 0)
-            {
-                Log.Message($"{equippedWep} has no ammo to subtract.");
-                return false;
-            }
-
-            short newAmmo = (short)Math.Max(currentAmmo - amountToSubtract, 0);
-
-            if (newAmmo == currentAmmo)
-            {
-                Log.Message($"{equippedWep} ammo cannot be reduced further.");
-                return false;
-            }
-
-            manager.WriteWeaponAmmo(equippedWep, newAmmo);
-
-            Log.Message($"Subtracted {amountToSubtract} ammo from {equippedWep}. Ammo: {currentAmmo} -> {newAmmo}");
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Log.Error($"An error occurred while subtracting ammo: {ex.Message}");
-            return false;
-        }
     }
 
     private bool AddAmmo(Weapons weapon, short amountToAdd, out string message)
@@ -1098,14 +1214,14 @@ public class MGS2 : InjectEffectPack
             var manager = new WeaponItemManager(this);
             short currentAmmo = manager.ReadWeaponAmmo(weapon);
 
-            // -1 or 65535 means players doesn't have the weapon
+            // -1 / 65535 means the weapon is not currently owned; allow grant from zero.
             if (currentAmmo == -1)
             {
-                message = $"{weapon} has not been obtained yet.";
-                return false;
+                currentAmmo = 0;
             }
 
-            short newAmmo = (short)Math.Max(currentAmmo + amountToAdd, 0);
+            int newAmmoInt = Math.Clamp(currentAmmo + amountToAdd, 0, short.MaxValue);
+            short newAmmo = (short)newAmmoInt;
             manager.WriteWeaponAmmo(weapon, newAmmo);
 
             message = $"Added {amountToAdd} ammo to {weapon}. Ammo: {currentAmmo} -> {newAmmo}";
@@ -1203,6 +1319,228 @@ public class MGS2 : InjectEffectPack
     private bool AddBookAmmo(short amountToAdd)
     {
         return AddAmmo(Weapons.WEP_BOOK, amountToAdd, out _);
+    }
+
+    private bool SubtractAmmo(Weapons weapon, short amountToSubtract, out string message)
+    {
+        try
+        {
+            var manager = new WeaponItemManager(this);
+            short currentAmmo = manager.ReadWeaponAmmo(weapon);
+
+            // Missing weapon reads as -1 / 65535; treat as zero and clamp write to zero.
+            if (currentAmmo == -1)
+            {
+                currentAmmo = 0;
+            }
+
+            int newAmmoInt = Math.Clamp(currentAmmo - amountToSubtract, 0, short.MaxValue);
+            short newAmmo = (short)newAmmoInt;
+            manager.WriteWeaponAmmo(weapon, newAmmo);
+
+            message = $"Subtracted {amountToSubtract} ammo from {weapon}. Ammo: {currentAmmo} -> {newAmmo}";
+            Log.Message(message);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            message = $"An error occurred while subtracting {amountToSubtract} ammo from {weapon}: {ex.Message}";
+            Log.Error(message);
+            return false;
+        }
+    }
+
+    private bool SubtractM9Ammo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_M9, amountToSubtract, out _);
+    }
+
+    private bool SubtractUspAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_USP, amountToSubtract, out _);
+    }
+
+    private bool SubtractSocomAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_SOCOM, amountToSubtract, out _);
+    }
+
+    private bool SubtractPsg1Ammo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_PSG1, amountToSubtract, out _);
+    }
+
+    private bool SubtractRgb6Ammo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_RGB6, amountToSubtract, out _);
+    }
+
+    private bool SubtractNikitaAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_NIKITA, amountToSubtract, out _);
+    }
+
+    private bool SubtractStingerAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_STINGER, amountToSubtract, out _);
+    }
+
+    private bool SubtractClaymoreAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_CLAYMORE, amountToSubtract, out _);
+    }
+
+    private bool SubtractC4Ammo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_C4, amountToSubtract, out _);
+    }
+
+    private bool SubtractChaffAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_CHAFF, amountToSubtract, out _);
+    }
+
+    private bool SubtractStungAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_STUNG, amountToSubtract, out _);
+    }
+
+    private bool SubtractAks74uAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_AKS74U, amountToSubtract, out _);
+    }
+
+    private bool SubtractMagazineAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_MAGAZINE, amountToSubtract, out _);
+    }
+
+    private bool SubtractGrenadeAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_GRENADE, amountToSubtract, out _);
+    }
+
+    private bool SubtractM4Ammo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_M4, amountToSubtract, out _);
+    }
+
+    private bool SubtractPsg1tAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_PSG1T, amountToSubtract, out _);
+    }
+
+    private bool SubtractBookAmmo(short amountToSubtract)
+    {
+        return SubtractAmmo(Weapons.WEP_BOOK, amountToSubtract, out _);
+    }
+
+    private bool CanCharacterReceiveWeaponAmmo(string character, Weapons weapon, out string restrictionReason)
+    {
+        if ((character == "r_plt0" || character == "r_vr_b" || character == "r_vr_r") &&
+            weapon == Weapons.WEP_USP)
+        {
+            restrictionReason = "cannot receive USP ammo";
+            return false;
+        }
+
+        if (character == "r_tnk0" &&
+            (weapon == Weapons.WEP_STINGER ||
+             weapon == Weapons.WEP_SOCOM ||
+             weapon == Weapons.WEP_RGB6 ||
+             weapon == Weapons.WEP_PSG1T ||
+             weapon == Weapons.WEP_PSG1 ||
+             weapon == Weapons.WEP_NIKITA ||
+             weapon == Weapons.WEP_M4 ||
+             weapon == Weapons.WEP_CLAYMORE ||
+             weapon == Weapons.WEP_C4 ||
+             weapon == Weapons.WEP_BOOK ||
+             weapon == Weapons.WEP_AKS74U))
+        {
+            restrictionReason = $"cannot receive {weapon} ammo";
+            return false;
+        }
+
+        restrictionReason = string.Empty;
+        return true;
+    }
+
+    private bool TryStartAddAmmoEffect(
+        EffectRequest request,
+        string[] codeParams,
+        Weapons weapon,
+        Func<short, bool> addAmmoAction,
+        string successMessageTemplate)
+    {
+        if (codeParams.Length < 2)
+        {
+            Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
+            return false;
+        }
+
+        if (!int.TryParse(codeParams[1], out int quantity))
+        {
+            Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+            return false;
+        }
+
+        if (quantity <= 0 || quantity > short.MaxValue)
+        {
+            Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
+            return false;
+        }
+
+        currentCharacter = GetCharacterString();
+        if (!CanCharacterReceiveWeaponAmmo(currentCharacter, weapon, out string restrictionReason))
+        {
+            Respond(request, EffectStatus.FailTemporary, StandardErrors.InvalidTarget, [currentCharacter, restrictionReason]);
+            return false;
+        }
+
+        TryEffect(request,
+            () => true,
+            () => addAmmoAction((short)quantity),
+            () => Connector.SendMessage(text: $"{request.DisplayViewer} {string.Format(successMessageTemplate, quantity)}"));
+        return true;
+    }
+
+    private bool TryStartSubtractAmmoEffect(
+        EffectRequest request,
+        string[] codeParams,
+        Weapons weapon,
+        Func<short, bool> subtractAmmoAction,
+        string successMessageTemplate)
+    {
+        if (codeParams.Length < 2)
+        {
+            Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
+            return false;
+        }
+
+        if (!int.TryParse(codeParams[1], out int quantity))
+        {
+            Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
+            return false;
+        }
+
+        if (quantity <= 0 || quantity > short.MaxValue)
+        {
+            Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
+            return false;
+        }
+
+        currentCharacter = GetCharacterString();
+        if (!CanCharacterReceiveWeaponAmmo(currentCharacter, weapon, out string restrictionReason))
+        {
+            Respond(request, EffectStatus.FailTemporary, StandardErrors.InvalidTarget, [currentCharacter, restrictionReason]);
+            return false;
+        }
+
+        TryEffect(request,
+            () => true,
+            () => subtractAmmoAction((short)quantity),
+            () => Connector.SendMessage(text: $"{request.DisplayViewer} {string.Format(successMessageTemplate, quantity)}"));
+        return true;
     }
 
     #endregion
@@ -1396,73 +1734,92 @@ public class MGS2 : InjectEffectPack
 
         new ("Set Guard to Point Gun", "setGuardAnimationsPointGun")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to point gun during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Move Forward", "setGuardAnimationsMoveForward")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to move forward at their stopping points",
             Category = "Guards"
         },
 
         new ("Set Guard to Yawn", "setGuardAnimationsYawn")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to yawn when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Stretch", "setGuardAnimationsStretch")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to stretch when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Long-Distance Overwatch", "setGuardAnimationsLongDistanceOverwatch")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to look a long distance with their scope when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Take Off Goggles", "setGuardAnimationsTakeOffGoggles")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to take off their goggles when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Pat the Floor", "setGuardAnimationsPatTheFloor")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to pat the floor when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Phase In and Out", "setGuardAnimationsPhaseInOut")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to break the known laws of physics and phase in and out when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Pee Wiggle", "setGuardAnimationsPeeWiggle")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to wiggle as if they gotta pee when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Lean Right", "setGuardAnimationsLeanRight")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to lean right when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Lean Left", "setGuardAnimationsLeanLeft")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to lean left when they stop during their patrol",
             Category = "Guards"
         },
 
         new ("Set Guard to Roll Left", "setGuardAnimationsRollLeft")
         {   Price = 30,
+            Duration = 15,
             Description = "Sets the guard animations to side roll to the left when they stop during their patrol",
+            Category = "Guards"
+        },
+
+        new ("Random Guard Animations", "setGuardAnimationsRandom")
+        {   Price = 60,
+            Duration = 30,
+            Description = "Randomly changes guard animations every 5 seconds, then returns to normal",
             Category = "Guards"
         },
 
@@ -1499,7 +1856,15 @@ public class MGS2 : InjectEffectPack
             Price = 150,
             Duration = 20,
             Description = "Gives the player infinite ammo for a short duration",
-            Category = new string[]{ "Snake/Raiden", "Ammo" }
+            Category = "Snake/Raiden"
+        },
+
+        new ("Disable Item/Weapon Menu Pause", "disableMenuPause")
+        {
+            Price = 120,
+            Duration = 60,
+            Description = "Disables item and weapon menu pause so gameplay continues while the menu is open",
+            Category = "Snake/Raiden"
         },
 
         new ("Break Box", "breakBox")
@@ -1517,148 +1882,262 @@ public class MGS2 : InjectEffectPack
         },
         */
 
-        // Ammo
-        new("Subtract Ammo", "subtractAmmo")
-        {   Price = 2,
-            Quantity = 50,
-            Description = "Removes a chunk of the player's ammo/quantity from their equipped weapon",
-            Category = "Ammo"
-        },
+        // Ammo (Add)
 
-        new ("Add M9 Ammo", "addM9Ammo")
+        new ("+ M9 Ammo", "addM9Ammo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the M9",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add USP Ammo", "addUspAmmo")
+        new ("+ USP Ammo", "addUspAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the USP",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add SOCOM Ammo", "addSocomAmmo")
+        new ("+ SOCOM Ammo", "addSocomAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the SOCOM",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add PSG1 Ammo", "addPsg1Ammo")
+        new ("+ PSG1 Ammo", "addPsg1Ammo")
         { Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the PSG1",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add RGB6 Ammo", "addRgb6Ammo")
+        new ("+ RGB6 Ammo", "addRgb6Ammo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the RGB6",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add Nikita Ammo", "addNikitaAmmo")
+        new ("+ Nikita Ammo", "addNikitaAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the Nikita",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add Stinger Ammo", "addStingerAmmo")
+        new ("+ Stinger Ammo", "addStingerAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the Stinger",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add Claymores", "addClaymoreAmmo")
+        new ("+ Claymores", "addClaymoreAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the Claymore",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add C4", "addC4Ammo")
+        new ("+ C4", "addC4Ammo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the C4",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add Chaff Grenades", "addChaffAmmo")
+        new ("+ Chaff Grenades", "addChaffAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the Chaff",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add Stun Grenades", "addStungAmmo")
+        new ("+ Stun Grenades", "addStungAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the Stung",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add AKS74U Ammo", "addAks74uAmmo")
+        new ("+ AKS74U Ammo", "addAks74uAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the AKS74U",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add Magazine Ammo", "addMagazineAmmo")
+        new ("+ Magazine Ammo", "addMagazineAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Gives the player extra Empty Magazines to throw",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add Grenades", "addGrenadeAmmo")
+        new ("+ Grenades", "addGrenadeAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds to the Grenade ",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add M4 Ammo", "addM4Ammo")
+        new ("+ M4 Ammo", "addM4Ammo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the M4",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add PSG1-T Ammo", "addPsg1tAmmo")
+        new ("+ PSG1-T Ammo", "addPsg1tAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the PSG1-T",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
         },
 
-        new ("Add Books", "addBookAmmo")
+        new ("+ Books", "addBookAmmo")
         {   Price = 2,
-            Quantity = 50,
+            Quantity = 100,
             Description = "Adds ammo to the Book",
-            Category = "Ammo",
+            Category = "Ammo (Add)",
             Image = "give_ammo"
+        },
+
+        // Ammo (Subtract)
+        new("- M9 Ammo", "subtractM9Ammo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the M9",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- USP Ammo", "subtractUspAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the USP",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- SOCOM Ammo", "subtractSocomAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the SOCOM",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- PSG1 Ammo", "subtractPsg1Ammo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the PSG1",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- RGB6 Ammo", "subtractRgb6Ammo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the RGB6",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- Nikita Ammo", "subtractNikitaAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the Nikita",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- Stinger Ammo", "subtractStingerAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the Stinger",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- Claymores", "subtractClaymoreAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the Claymore",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- C4", "subtractC4Ammo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the C4",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- Chaff Grenades", "subtractChaffAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the Chaff",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- Stun Grenades", "subtractStungAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the Stung",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- AKS74U Ammo", "subtractAks74uAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the AKS74U",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- Magazine Ammo", "subtractMagazineAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts Empty Magazine count",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- Grenades", "subtractGrenadeAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts from the Grenade pouch",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- M4 Ammo", "subtractM4Ammo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the M4",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- PSG1-T Ammo", "subtractPsg1tAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the PSG1-T",
+            Category = "Ammo (Subtract)"
+        },
+
+        new("- Books", "subtractBookAmmo")
+        {   Price = 2,
+            Quantity = 100,
+            Description = "Subtracts ammo from the Book",
+            Category = "Ammo (Subtract)"
         },
 
     };
@@ -1767,7 +2246,7 @@ public class MGS2 : InjectEffectPack
                 byte current1 = GetCameraZoom();
                 if (current1 == 3)
                 {
-                    FastFail(request, EffectStatus.FailTemporary, StandardErrors.AlreadyInState, ["Camera", "zoomed-in"]);
+                    Respond(request, EffectStatus.FailTemporary, StandardErrors.AlreadyInState, ["Camera", "zoomed-in"]);
                     break;
                 }
 
@@ -1820,6 +2299,8 @@ public class MGS2 : InjectEffectPack
             #region Guards
 
             case "setGuardAnimationsNormal":
+                ++guardAnimationToken;
+                isTimedGuardAnimationActive = false;
                 TryEffect(request,
                     () => true,
                     () =>
@@ -1831,135 +2312,55 @@ public class MGS2 : InjectEffectPack
                 break;
 
             case "setGuardAnimationsPointGun":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsPointGun();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to point gun."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsPointGun, "point gun");
                 break;
 
             case "setGuardAnimationsMoveForward":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsMoveForward();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to move forward."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsMoveForward, "move forward");
                 break;
 
             case "setGuardAnimationsYawn":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsYawn();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to yawn."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsYawn, "yawn");
                 break;
 
             case "setGuardAnimationsStretch":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsStretch();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to stretch."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsStretch, "stretch");
                 break;
 
             case "setGuardAnimationsLongDistanceOverwatch":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsLongDistanceOverwatch();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to long-distance overwatch."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsLongDistanceOverwatch, "long-distance overwatch");
                 break;
 
             case "setGuardAnimationsTakeOffGoggles":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsTakeOffGoggles();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to take off goggles."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsTakeOffGoggles, "take off goggles");
                 break;
 
             case "setGuardAnimationsPatTheFloor":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsPatTheFloor();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to pat the floor."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsPatTheFloor, "pat the floor");
                 break;
 
             case "setGuardAnimationsPhaseInOut":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsPhaseInOut();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to phase in and out."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsPhaseInOut, "phase in and out");
                 break;
 
             case "setGuardAnimationsPeeWiggle":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsPeeWiggle();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to pee wiggle."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsPeeWiggle, "pee wiggle");
                 break;
 
             case "setGuardAnimationsLeanRight":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsLeanRight();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to lean right."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsLeanRight, "lean right");
                 break;
 
             case "setGuardAnimationsLeanLeft":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsLeanLeft();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to lean left."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsLeanLeft, "lean left");
                 break;
 
             case "setGuardAnimationsRollLeft":
-                TryEffect(request,
-                    () => true,
-                    () =>
-                    {
-                        SetGuardAnimationsRollLeft();
-                        return true;
-                    },
-                    () => Connector.SendMessage(text: $"{request.DisplayViewer} set the guard animations to roll left."));
+                StartTimedGuardAnimationEffect(request, SetGuardAnimationsRollLeft, "roll left");
+                break;
+
+            case "setGuardAnimationsRandom":
+                StartRandomGuardAnimationEffect(request);
                 break;
 
             case "forceGuardsToSleep":
@@ -2106,8 +2507,31 @@ public class MGS2 : InjectEffectPack
                 }
                 else
                 {
-                    FastFail(request, EffectStatus.FailTemporary, StandardErrors.InvalidTarget, ["This character", "infinite ammo"]);
+                    Respond(request, EffectStatus.FailTemporary, StandardErrors.InvalidTarget, ["This character", "infinite ammo"]);
                 }
+                break;
+
+            case "disableMenuPause":
+                var disableMenuPauseDuration = TimeSpan.FromSeconds(request.Duration.TotalSeconds);
+                var disableMenuPauseAct = RepeatAction(request,
+                    () => true,
+                    () => Connector.SendMessage(text: $"{request.DisplayViewer} disabled item and weapon menu pause for {disableMenuPauseDuration.TotalSeconds} seconds."),
+                    TimeSpan.Zero,
+                    () => IsReady(request: request),
+                    TimeSpan.FromMilliseconds(value: 500),
+                () =>
+                {
+                    SetMenuPauseDisabled();
+                    return true;
+                },
+                    TimeSpan.FromMilliseconds(value: 500),
+                false);
+                disableMenuPauseAct.WhenCompleted.Then
+                    (f: _ =>
+                    {
+                        RestoreMenuPauseDefault();
+                        Connector.SendMessage(text: "Item and weapon menu pause behavior has been restored.");
+                    });
                 break;
 
             case "breakBox":
@@ -2119,7 +2543,7 @@ public class MGS2 : InjectEffectPack
                     eq != Items.ITM_BOX5 &&
                     eq != Items.ITM_WETBOX)
                 {
-                    FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "A box");
+                    Respond(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "A box");
                     break;
                 }
                 TryEffect(request,
@@ -2136,187 +2560,135 @@ public class MGS2 : InjectEffectPack
 
             #region Ammo
 
-            case "subtractAmmo":
+            case "subtractM9Ammo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-                    
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-                    
-                    if (GetWeaponClipCountShort() == 0)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "An equipped weapon with ammo");
-                        break;
-                    }
-                    
-                    TryEffect(request,
-                                () => true,
-                                () => SubtractAmmoFromEquippedWeapon(amountToSubtract: (short)quantity),
-                                () => Connector.SendMessage(
-                                    text: $"{request.DisplayViewer} subtracted {quantity} ammo from the player's equipped weapon."
-                                ));
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_M9, SubtractM9Ammo, "subtracted {0} ammo from the M9.");
+                    break;
+                }
+
+            case "subtractUspAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_USP, SubtractUspAmmo, "subtracted {0} ammo from the USP.");
+                    break;
+                }
+
+            case "subtractSocomAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_SOCOM, SubtractSocomAmmo, "subtracted {0} ammo from the SOCOM.");
+                    break;
+                }
+
+            case "subtractPsg1Ammo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_PSG1, SubtractPsg1Ammo, "subtracted {0} ammo from the PSG1.");
+                    break;
+                }
+
+            case "subtractRgb6Ammo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_RGB6, SubtractRgb6Ammo, "subtracted {0} grenades from the RGB6.");
+                    break;
+                }
+
+            case "subtractNikitaAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_NIKITA, SubtractNikitaAmmo, "subtracted {0} remote controlled missiles from the Nikita.");
+                    break;
+                }
+
+            case "subtractStingerAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_STINGER, SubtractStingerAmmo, "subtracted {0} missiles from the Stinger.");
+                    break;
+                }
+
+            case "subtractClaymoreAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_CLAYMORE, SubtractClaymoreAmmo, "subtracted {0} from the Claymore pouch.");
+                    break;
+                }
+
+            case "subtractC4Ammo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_C4, SubtractC4Ammo, "subtracted {0} from the C4 count.");
+                    break;
+                }
+
+            case "subtractChaffAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_CHAFF, SubtractChaffAmmo, "subtracted {0} from the Chaff Grenade pouch.");
+                    break;
+                }
+
+            case "subtractStungAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_STUNG, SubtractStungAmmo, "subtracted {0} from the Stun Grenade pouch.");
+                    break;
+                }
+
+            case "subtractAks74uAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_AKS74U, SubtractAks74uAmmo, "subtracted {0} ammo from the AKS74U.");
+                    break;
+                }
+
+            case "subtractMagazineAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_MAGAZINE, SubtractMagazineAmmo, "subtracted {0} from the Empty Magazine count.");
+                    break;
+                }
+
+            case "subtractGrenadeAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_GRENADE, SubtractGrenadeAmmo, "subtracted {0} from the Grenade pouch.");
+                    break;
+                }
+
+            case "subtractM4Ammo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_M4, SubtractM4Ammo, "subtracted {0} ammo from the M4.");
+                    break;
+                }
+
+            case "subtractPsg1tAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_PSG1T, SubtractPsg1tAmmo, "subtracted {0} ammo from the PSG1-T.");
+                    break;
+                }
+
+            case "subtractBookAmmo":
+                {
+                    TryStartSubtractAmmoEffect(request, codeParams, Weapons.WEP_BOOK, SubtractBookAmmo, "subtracted {0} from the Book supply.");
                     break;
                 }
 
             case "addM9Ammo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-                    
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_M9) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The M9");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddM9Ammo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the M9."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_M9, AddM9Ammo, "added {0} ammo to the M9.");
                     break;
                 }
 
             case "addUspAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_USP) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The USP");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddUspAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the USP."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_USP, AddUspAmmo, "added {0} ammo to the USP.");
                     break;
                 }
 
             case "addSocomAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_SOCOM) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The SOCOM");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddSocomAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the SOCOM."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_SOCOM, AddSocomAmmo, "added {0} ammo to the SOCOM.");
                     break;
                 }
 
             case "addPsg1Ammo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_PSG1) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The PSG1");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddPsg1Ammo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the PSG1."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_PSG1, AddPsg1Ammo, "added {0} ammo to the PSG1.");
                     break;
                 }
 
             case "addRgb6Ammo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_RGB6) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The RGB6");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddRgb6Ammo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} grenades into the RGB6."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_RGB6, AddRgb6Ammo, "added {0} grenades into the RGB6.");
                     break;
                 }
 
@@ -2324,373 +2696,73 @@ public class MGS2 : InjectEffectPack
 
             case "addNikitaAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_NIKITA) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Nikita");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddNikitaAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} remote controlled missiles to the Nikita."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_NIKITA, AddNikitaAmmo, "added {0} remote controlled missiles to the Nikita.");
                     break;
                 }
 
             case "addStingerAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_STINGER) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Stinger");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddStingerAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} missiles to the Stinger."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_STINGER, AddStingerAmmo, "added {0} missiles to the Stinger.");
                     break;
                 }
 
             case "addClaymoreAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_CLAYMORE) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Claymore");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddClaymoreAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Claymore pouch."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_CLAYMORE, AddClaymoreAmmo, "added {0} to the Claymore pouch.");
                     break;
                 }
 
             case "addC4Ammo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_C4) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The C4");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddC4Ammo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the C4 count."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_C4, AddC4Ammo, "added {0} to the C4 count.");
                     break;
                 }
 
             case "addChaffAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_CHAFF) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Chaff");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddChaffAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Chaff Grenade pouch."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_CHAFF, AddChaffAmmo, "added {0} to the Chaff Grenade pouch.");
                     break;
                 }
 
             case "addStungAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_STUNG) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Stung");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddStungAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Stun Grenade pouch."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_STUNG, AddStungAmmo, "added {0} to the Stun Grenade pouch.");
                     break;
                 }
 
             case "addAks74uAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_AKS74U) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The AKS74U");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddAks74uAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the AKS74U."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_AKS74U, AddAks74uAmmo, "added {0} ammo to the AKS74U.");
                     break;
                 }
 
             case "addMagazineAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_MAGAZINE) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Empty Magazine");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddMagazineAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Empty Magazine count."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_MAGAZINE, AddMagazineAmmo, "added {0} to the Empty Magazine count.");
                     break;
                 }
 
             case "addGrenadeAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_GRENADE) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Grenade");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddGrenadeAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Grenade pouch."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_GRENADE, AddGrenadeAmmo, "added {0} to the Grenade pouch.");
                     break;
                 }
 
             case "addM4Ammo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_M4) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The M4");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddM4Ammo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the M4."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_M4, AddM4Ammo, "added {0} ammo to the M4.");
                     break;
                 }
 
             case "addPsg1tAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_PSG1T) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The PSG1-T");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddPsg1tAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} ammo to the PSG1-T."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_PSG1T, AddPsg1tAmmo, "added {0} ammo to the PSG1-T.");
                     break;
                 }
 
             case "addBookAmmo":
                 {
-                    if (codeParams.Length < 2)
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.BadRequest);
-                        break;
-                    }
-
-                    if (!int.TryParse(codeParams[1], out int quantity))
-                    {
-                        Respond(request, EffectStatus.FailTemporary, StandardErrors.CannotParseNumber, codeParams[1]);
-                        break;
-                    }
-
-                    if (new WeaponItemManager(mainClass: this).ReadWeaponAmmo(weapon: Weapons.WEP_BOOK) == -1)
-                    {
-                        FastFail(request, EffectStatus.FailTemporary, StandardErrors.PrerequisiteNotFound, "The Book");
-                        break;
-                    }
-
-                    TryEffect(request,
-                        () => true,
-                        () =>
-                        {
-                            AddBookAmmo(amountToAdd: (short)quantity);
-                            return true;
-                        },
-                        () => Connector.SendMessage(text: $"{request.DisplayViewer} added {quantity} to the Book supply."));
+                    TryStartAddAmmoEffect(request, codeParams, Weapons.WEP_BOOK, AddBookAmmo, "added {0} to the Book supply.");
                     break;
                 }
 
