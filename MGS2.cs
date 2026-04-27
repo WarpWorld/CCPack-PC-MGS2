@@ -2767,7 +2767,7 @@ public class MGS2 : InjectEffectPack
                 }
 
             default:
-                Respond(request, EffectStatus.FailTemporary, StandardErrors.UnknownEffect, request);
+                Respond(request, EffectStatus.FailTemporary, StandardErrors.EffectUnknown, request);
                 break;
 
                 #endregion
